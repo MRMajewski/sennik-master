@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -10,9 +11,9 @@ public class Main : MonoBehaviour {
     [SerializeField] Player playerPrefab;
     [SerializeField] Reflection reflectionPrefab;
 
-    [SerializeField] Vector2 boardSize;
-
+ 
     Player player;
+    Reflection reflection;
 
     CancellationTokenSource multiplayerCTS = new();
     Client client;
@@ -29,11 +30,61 @@ public class Main : MonoBehaviour {
     private float offsetDistance = .75f;
 
 
+    [SerializeField]
+    private GameObject winPanel;
+
+    [SerializeField]
+    private bool cannotBeMoved=false;
+
+    [Space]
+    [Header("Board Parameteres")]
+
+    [SerializeField] Vector2 boardSize;
+
+    [SerializeField]
+    private List<GameObject> portalsList;
+
+    [SerializeField]
+    private List<GameObject> possibleObstacles;
+
+    [SerializeField]
+    private Vector2 numberOfObstaclesRange= new Vector2(5,10);
+
+    [SerializeField]
+    private List<GameObject> currentObstaclesList;
+
+    [SerializeField]
+    private Transform currentObstaclesParent;
+
+    [SerializeField]
+    private Transform currenPortalsParent;
+
+    [SerializeField]
+    private Vector2 portalCountRange = new Vector2(2, 10); 
+
+    [SerializeField]
+    private GameObject portalPrefab;
+
+    // Zabezpieczenie, aby x <= y
+    private void OnValidate() {
+        if (numberOfObstaclesRange.x > numberOfObstaclesRange.y) {
+            numberOfObstaclesRange.x = numberOfObstaclesRange.y;
+        }
+
+        // Zabezpieczenie, aby x <= y oraz wartoœci by³y parzyste.
+        if (portalCountRange.x > portalCountRange.y) {
+            portalCountRange.x = portalCountRange.y;
+        }
+    }
 
     void Awake() {
         SetupMultiplayer();
         player = InstantiatePlayer();
-        InstantiateReflection();
+        reflection = InstantiateReflection();
+        winPanel.SetActive(false);
+        InitBoardAndObjects();
+        InitPortals();
+        //  InstantiateReflection();
         return;
 
         void SetupMultiplayer() {
@@ -73,7 +124,7 @@ public class Main : MonoBehaviour {
         Player InstantiatePlayer()
             => Instantiate(playerPrefab, GetRandomPosition(), rotation: Quaternion.identity);
 
-        void InstantiateReflection()
+        Reflection InstantiateReflection()
             => Instantiate(reflectionPrefab, GetRandomPosition(), rotation: Quaternion.identity);
 
         Vector3 GetRandomPosition() {
@@ -82,21 +133,116 @@ public class Main : MonoBehaviour {
                 0f,
                 GetRandomOffset() * boardSize.y
             );
+            
         }
 
         float GetRandomOffset()
             => UnityEngine.Random.value - 0.5f;
+
+      
     }
 
-    //public void InitGame() {
+    public void InitBoardAndObjects() {
 
-    //    if(player) {
+        foreach (var obstacle in currentObstaclesList) {
+            Destroy(obstacle);
+        }
+        currentObstaclesList.Clear();
 
-    //    }
-    //    ele
-    //}
+
+        int obstacleCount = UnityEngine.Random.Range((int)numberOfObstaclesRange.x, (int)numberOfObstaclesRange.y + 1);
+
+        for (int i = 0; i < obstacleCount; i++) {
+            GameObject obstaclePrefab = possibleObstacles[UnityEngine.Random.Range(0, possibleObstacles.Count)];
 
 
+            Vector3 position;
+            bool positionValid;
+            int attempts = 0;
+            const int maxAttempts = 100; // Limit prób, by unikn¹æ nieskoñczonej pêtli
+
+            do {
+                positionValid = true;
+                position = new Vector3(
+                    UnityEngine.Random.Range(-boardSize.x / 2-1, boardSize.x / 2-1),
+                    0f,
+                    UnityEngine.Random.Range(-boardSize.y / 2-1, boardSize.y / 2 - 1)
+                );
+
+                // Sprawdzenie kolizji z istniej¹cymi przeszkodami
+                foreach (var existingObstacle in currentObstaclesList) {
+                    if (Vector3.Distance(position, existingObstacle.transform.position) < offsetDistance) {
+                        positionValid = false;
+                        break;
+                    }
+                }
+
+                attempts++;
+            } while (!positionValid && attempts < maxAttempts);
+
+
+            if (positionValid) {
+                Quaternion rotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
+                GameObject newObstacle = Instantiate(obstaclePrefab, position, rotation, currentObstaclesParent);
+                currentObstaclesList.Add(newObstacle);
+            } else {
+                Debug.LogWarning($"Nie uda³o siê wygenerowaæ pozycji dla przeszkody po {maxAttempts} próbach.");
+            }
+        }
+    }
+
+    public void InitPortals() {
+
+        foreach (var portal in portalsList) {
+            Destroy(portal);
+        }
+        portalsList.Clear();
+
+        int portalCount = UnityEngine.Random.Range((int)portalCountRange.x, (int)portalCountRange.y + 1);
+
+
+        List<Vector3> usedPositions = new List<Vector3>();
+
+        // Generowanie portali.
+        for (int i = 0; i < portalCount; i++) {
+            Vector3 position;
+            int maxAttempts = 100;
+            int attempts = 0;
+
+
+            do {
+                position = new Vector3(
+                    UnityEngine.Random.Range(-boardSize.x / 2, boardSize.x / 2),
+                    0f,
+                    UnityEngine.Random.Range(-boardSize.y / 2, boardSize.y / 2)
+                );
+                attempts++;
+            } while (usedPositions.Exists(p => Vector3.Distance(p, position) < 1f) && attempts < maxAttempts);
+
+            if (attempts >= maxAttempts) {
+                Debug.LogWarning("Nie uda³o siê znaleŸæ wystarczaj¹cej liczby miejsc na portale.");
+                break;
+            }
+            Quaternion rotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
+
+            var portalObject = Instantiate(portalPrefab, position, rotation, currenPortalsParent);
+            portalsList.Add(portalObject);
+            usedPositions.Add(position);
+           
+        }
+
+        PreparePortals();
+
+        void PreparePortals() {
+
+            for (int i = 0; i < portalsList.Count - 1; i++) {
+
+                portalsList[i].GetComponent<Portal>().SetExitPortal(portalsList[i + 1].GetComponent<Portal>());
+            }
+
+            portalsList[portalsList.Count-1].GetComponent<Portal>().SetExitPortal(portalsList[0].GetComponent<Portal>());
+        }
+    }
 
 
     void Start() {
@@ -116,7 +262,7 @@ public class Main : MonoBehaviour {
 #endif
                 ExitFromGame();
             }
-
+            if (cannotBeMoved) return;
             if (Input.anyKey)
                 player.Move(Config.MOVEMENT* playerSpeedParameter);
 
@@ -131,19 +277,29 @@ public class Main : MonoBehaviour {
     }
 
     private void LateUpdate() {
-        CheckPortals();
+        CheckTriggers();
         return;
 
-        void CheckPortals() {
+        void CheckTriggers() {
             var trigger = player.enteredTrigger;
             if (trigger == null)
                 return;
 
             var portal = trigger.GetComponent<Portal>();
-            if (portal != null)
+            if (portal != null) 
+            {
                 UsePortal(portal);
 
-            player.enteredTrigger = null;
+                player.enteredTrigger = null;
+                return;
+            }
+               else if (trigger.GetComponent<Reflection>()) {
+                Debug.Log("Found Reflection");
+                     winPanel.SetActive(true);
+                cannotBeMoved
+                    = true; 
+              //  return;
+            }
         }
 
         void UsePortal(Portal portal) {
@@ -170,6 +326,9 @@ public class Main : MonoBehaviour {
         playerSpeedParameter = value;
     }
 
+    public void SetBoolCannotMove(bool value) {
+        cannotBeMoved = value;
+    }
     public void ExitFromGame() {
         Application.Quit();
     }
