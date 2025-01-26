@@ -21,6 +21,15 @@ public class Main : MonoBehaviour {
 
     float previousMousePosition;
 
+
+    [SerializeField]
+    private float playerSpeedParameter = 1f;
+
+    [SerializeField]
+    private float offsetDistance = .75f;
+
+
+
     void Awake() {
         SetupMultiplayer();
         player = InstantiatePlayer();
@@ -79,12 +88,23 @@ public class Main : MonoBehaviour {
             => UnityEngine.Random.value - 0.5f;
     }
 
+    //public void InitGame() {
+
+    //    if(player) {
+
+    //    }
+    //    ele
+    //}
+
+
+
+
     void Start() {
         previousMousePosition = GetMousePosition();
     }
 
     void Update() {
-        CheckPortals();
+     
         CheckInput();
         return;
 
@@ -94,11 +114,11 @@ public class Main : MonoBehaviour {
 #if UNITY_EDITOR
                 EditorApplication.ExitPlaymode();
 #endif
-                Application.Quit();
+                ExitFromGame();
             }
 
             if (Input.anyKey)
-                player.Move(Config.MOVEMENT);
+                player.Move(Config.MOVEMENT* playerSpeedParameter);
 
             var mousePosition = GetMousePosition();
             var mouseDelta = mousePosition - previousMousePosition;
@@ -107,6 +127,12 @@ public class Main : MonoBehaviour {
             if (!Mathf.Approximately(mouseDelta, 0f))
                 player.Rotate(mouseDelta);
         }
+  
+    }
+
+    private void LateUpdate() {
+        CheckPortals();
+        return;
 
         void CheckPortals() {
             var trigger = player.enteredTrigger;
@@ -121,11 +147,35 @@ public class Main : MonoBehaviour {
         }
 
         void UsePortal(Portal portal) {
-            var positionDiff = portal.transform.position - player.transform.position;
-            Debug.Log($"{nameof(UsePortal)}: from {portal.name} to {portal.GetExitPortal().name}"); //TODO remove once the issue is fixed
-            player.transform.position = portal.GetExitPortal().transform.position - positionDiff * 2f;
+
+            Portal exitPortal = portal.GetExitPortal();
+
+            Vector3 exitPosition = exitPortal.transform.position;
+            Vector3 exitNormal = exitPortal.transform.right;
+
+            Vector3 adjustedPosition = exitPosition + exitNormal * offsetDistance;
+
+            Vector3 positionDiff = portal.transform.position - player.transform.position;
+
+            player.transform.position = adjustedPosition;
+            player.transform.rotation = Quaternion.LookRotation(exitPortal.transform.right, Vector3.up);
+
         }
     }
+
+    #region UI methods
+
+
+    public void SetPlayerSpeed(float value) {
+        playerSpeedParameter = value;
+    }
+
+    public void ExitFromGame() {
+        Application.Quit();
+    }
+
+    #endregion
+
 
     float GetMousePosition()
         => Input.mousePosition.x;

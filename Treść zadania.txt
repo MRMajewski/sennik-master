@@ -1,0 +1,44 @@
+Czołem!
+
+Jestem dowódcą oddziału [1] w firmie Volcano District. Moim zadaniem jest pośredniczenie pomiędzy szeregowymi [2], a Świętym Zespołem Designu. Przekazuję Ci w załączeniu projekt gry "Sernik". Zajmował się nim nasz poprzedni szeregowy [3]. Święty Zespół Designu przygotował dla Ciebie 12 prac.
+
+Prace obowiązkowe:
+1. Trzeba naprawić portale, bo nie działają.
+2. Ekran wygranej odpalany po dotarciu do odbicia.
+  - Powinien zawierać przycisk do wyjścia z gry i "zagraj ponownie".
+  - Nie dostaliśmy jeszcze assetów od  JPG [4], więc trzeba użyć czegoś placeholderowego.
+  - Ekran powinien dobrze wyświetlać się na różnych rozdzielczościach, w tym pionowych.
+  - Przyciski powinny wyświetlać się na środku i być dobrze widoczne (duże), żeby osoby z problemami ze wzrokiem nie miały problemu z obsługą.
+3. Generator podłoża powinien umieszczać na nim portale i jakieś losowe przeszkody. [5]
+4. Święty Zespół Designu chce dostroić prędkość gracza. Trzeba przeglądnąć system poruszania postaci gracza [6] i umożliwić konfigurowanie prędkości w skompilowanej grze (poza edytorem).
+
+Oprócz tego Święty Zespół Designu oczekuje wykonania 2 z następujących prac:
+A. Fajnie by było, gdyby postać gracza animowała się podczas poruszania się. Chyba mamy animacje w projekcie? Przeglądanie plików projektu nie należy do obowiązków dowódcy oddziału, więc nie wiem.
+B. Przydałoby się menu główne. Zasady podobne jak przy pracy 2.
+  - Potrzebujemy możliwości uruchomienia gry w trybie solo, hosta i klienta.
+  - W przypadku gry multiplayer musi być możliwość podania parametrów połączenia: dla hosta port, a dla klienta adres IP i port.
+  - Oczywiście w ramach tej pracy nie trzeba implementować docelowego działania trybu multiplayer. 
+C. Potrzebujemy ekranu ustawień, z możliwością:
+  - ustawienia czułości myszy,
+  - ustawienia głośności gry.
+D. Po przebiegnięciu 10 jednostek od startu rozgrywki w prawym dolnym rogu powinna pojawić się reklama na 5 sekund. 21. Krąg Marketingowy kontaktował się z poprzednim szeregowym, ponoć przekazane pliki zostały umieszczone w projekcie.
+E. Kamera dziwnie odcina rzeczy spoza zasięgu, można coś z tym zrobić. Może być Silent Hill, albo coś fajniejszego. A może po wykonaniu pracy 3. to przestanie być problemem i będzie można podkręcić far plane?
+F. Chcemy wprowadzić tryb multiplayer. Trzeba go zaimplementować. Z tego co wiem, mamy już jakiś prototyp komunikacji pomiędzy graczami. Żeby testować tryb multiplayer trzeba było skopiować projekt, jeśli dobrze pamiętam. [7] Jeśli nie wykonujesz pracy B. można wykorzystać parametry uruchomienia programu w celu uruchomienia rozgrywki w odpowiednim trybie.
+G. Nie mamy budżetu na utrzymywanie dużej liczby Qualitätssicherungsmeisterów, więc trzeba przygotować automat do walidacji wygenerowanej planszy. Taki automat musiałby sprawdzać, czy z każdego miejsca, w który może pojawic się gracz, można dostać się do każdego miejsca, w którym pojawi się jego odbicie.
+H. W ramach programu ORMO [8] możesz wymyślić coś swojego, napisać specyfikację i spróbować dodać to do gry. Wybór należy do Ciebie.
+
+Realizacja tych prac powinna zająć Ci około 10h. Z wszystkiego sporządź raport. Co zostało zrobione i dlaczego - preferujemy zagnieżdżoną strukturę wypunktowaną zamiast prozy.
+
+Życzę powodzenia i czekam na raport z projektem
+Dowódca oddziału 37. Robert Legwanowski
+
+---------------------------------------------------
+Przypisy:
+[1] Dowódca oddziału to odpowiednik Scrum Mastera w metodyce TNS (totally not scrum)
+[2] To Twoje stanowisko
+[3] Dopóki nie złożyliśmy go w ofierze Aranaktu
+[4] Jednostki Płaskich Grafików
+[5] Poprzedni szeregowy wspominał coś o jakimś assetowym zbawicielu, nie zrozumiałem o co mu chodziło.
+[6] Coś było z nim nie tak, ale nie wiem co.
+[7] Gdzieś była dokumentacja jak to ma działać, jakiś Game Design Doc, czy coś.
+[8] Opcjonalny Rozwój Masowo-Osobisty

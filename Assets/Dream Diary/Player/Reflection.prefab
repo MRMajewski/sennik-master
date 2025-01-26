@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5712081360708339636}
   - component: {fileID: 114238222001440680}
+  - component: {fileID: 5149739404666976973}
   m_Layer: 0
   m_Name: Reflection
   m_TagString: Untagged
@@ -45,6 +46,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1657f20a11b8ecce686969ac8cbf0af4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!135 &5149739404666976973
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2850494595437168949}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.75
+  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!1001 &8148854569335390585
 PrefabInstance:
   m_ObjectHideFlags: 0
