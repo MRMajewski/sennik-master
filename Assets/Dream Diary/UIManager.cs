@@ -55,6 +55,33 @@ public class UIManager : MonoBehaviour {
         HidePanelInstant(settingsPanel);
     }
 
+    public void CloseMainMenu() {
+        HidePanel(mainMenuPanel);
+        OpenPanel(headerPanel);
+
+
+        HidePanelInstant(winPanel);     
+        HidePanelInstant(hostPanel);
+        HidePanelInstant(clientPanel);
+        HidePanelInstant(settingsPanel);
+    }
+
+
+    public void ReinitUI() {
+        OpenPanel(headerPanel);
+        HidePanelInstant(winPanel);
+    }
+
+    public void ToggleSettingsPanelFromGame(bool openIt) {
+
+        if(openIt) {
+            OpenPanel(settingsPanel);           
+        } else {
+            HidePanel(settingsPanel);
+        }
+    }
+
+
     [ContextMenu("Open Win Panel")]
     public void OpenWinPanel() {
         OpenPanel(winPanel);

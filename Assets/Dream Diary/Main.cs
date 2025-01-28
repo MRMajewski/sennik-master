@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -39,12 +40,14 @@ public class Main : MonoBehaviour {
 
 
     [SerializeField]
-    private bool isGameOn = true;
+    private bool isGameOn = false;
 
     [Space]
     [Header("Board Parameteres")]
 
     [SerializeField] Vector2 boardSize;
+
+    [SerializeField] float objectsInitializationOffset = 2f;
 
     [SerializeField]
     private List<GameObject> portalsList;
@@ -75,8 +78,8 @@ public class Main : MonoBehaviour {
     private UIManager uiManager;
 
     [Header("Ad method references")]
-    private Vector3 previousPlayerPosition; 
-    private float distanceTraveled = 0f; 
+    private Vector3 previousPlayerPosition;
+    private float distanceTraveled = 0f;
     private bool wasAdShown = false;
 
     [Header("Settings references")]
@@ -94,15 +97,49 @@ public class Main : MonoBehaviour {
     }
 
     void Awake() {
-        SetupMultiplayer();
+        isGameOn = false;
+        uiManager.InitUI();
+        SetVolume(.5f);
+        SetMouseSensitivity(5f);
+    }
+
+
+    public void StartSoloGame() {
+
         player = InstantiatePlayer();
         previousPlayerPosition = player.transform.position;
         reflection = InstantiateReflection();
-        uiManager.InitUI();
-     //   winPanel.SetActive(false);
+    
+        uiManager.CloseMainMenu();
         InitBoardAndObjects();
         InitPortals();
+
         isGameOn = true;
+        cannotBeMoved = false;
+
+        Player InstantiatePlayer()
+       => Instantiate(playerPrefab, GetRandomPosition(), rotation: Quaternion.identity);
+
+        Reflection InstantiateReflection()
+            => Instantiate(reflectionPrefab, GetRandomPosition(), rotation: Quaternion.identity);
+
+        Vector3 GetRandomPosition() {
+            return new Vector3(
+                GetRandomOffset() * boardSize.x,
+                0f,
+                GetRandomOffset() * boardSize.y
+            );
+        }
+        float GetRandomOffset()
+            => UnityEngine.Random.value - 0.5f;
+
+
+    }
+
+
+    public void StartMultiplayer() {
+
+        SetupMultiplayer();
         return;
 
         void SetupMultiplayer() {
@@ -139,26 +176,8 @@ public class Main : MonoBehaviour {
         //     }
         // }
 
-        Player InstantiatePlayer()
-            => Instantiate(playerPrefab, GetRandomPosition(), rotation: Quaternion.identity);
-
-        Reflection InstantiateReflection()
-            => Instantiate(reflectionPrefab, GetRandomPosition(), rotation: Quaternion.identity);
-
-        Vector3 GetRandomPosition() {
-            return new Vector3(
-                GetRandomOffset() * boardSize.x,
-                0f,
-                GetRandomOffset() * boardSize.y
-            );
-
-        }
-
-        float GetRandomOffset()
-            => UnityEngine.Random.value - 0.5f;
-
-
     }
+
 
     public void InitBoardAndObjects() {
 
@@ -166,7 +185,6 @@ public class Main : MonoBehaviour {
             Destroy(obstacle);
         }
         currentObstaclesList.Clear();
-
 
         int obstacleCount = UnityEngine.Random.Range((int)numberOfObstaclesRange.x, (int)numberOfObstaclesRange.y + 1);
 
@@ -182,14 +200,14 @@ public class Main : MonoBehaviour {
             do {
                 positionValid = true;
                 position = new Vector3(
-                    UnityEngine.Random.Range(-boardSize.x / 2 - 1, boardSize.x / 2 - 1),
+                    UnityEngine.Random.Range(-boardSize.x / 2 - objectsInitializationOffset, boardSize.x / 2 - objectsInitializationOffset),
                     0f,
-                    UnityEngine.Random.Range(-boardSize.y / 2 - 1, boardSize.y / 2 - 1)
+                    UnityEngine.Random.Range(-boardSize.y / 2 - objectsInitializationOffset, boardSize.y / 2 - objectsInitializationOffset)
                 );
 
                 // Sprawdzenie kolizji z istniej¹cymi przeszkodami
                 foreach (var existingObstacle in currentObstaclesList) {
-                    if (Vector3.Distance(position, existingObstacle.transform.position) < offsetDistance * 2f) {
+                    if (Vector3.Distance(position, existingObstacle.transform.position) < objectsInitializationOffset) {
                         positionValid = false;
                         break;
                     }
@@ -197,7 +215,6 @@ public class Main : MonoBehaviour {
 
                 attempts++;
             } while (!positionValid && attempts < maxAttempts);
-
 
             if (positionValid) {
                 Quaternion rotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
@@ -218,24 +235,21 @@ public class Main : MonoBehaviour {
 
         int portalCount = UnityEngine.Random.Range((int)portalCountRange.x, (int)portalCountRange.y + 1);
 
-
         List<Vector3> usedPositions = new List<Vector3>();
 
-        // Generowanie portali.
         for (int i = 0; i < portalCount; i++) {
             Vector3 position;
             int maxAttempts = 100;
             int attempts = 0;
 
-
             do {
                 position = new Vector3(
-                    UnityEngine.Random.Range(-boardSize.x / 2 - 1, boardSize.x / 2 - 1),
+                    UnityEngine.Random.Range(-boardSize.x / 2 - objectsInitializationOffset, boardSize.x / 2 - objectsInitializationOffset),
                     0f,
-                    UnityEngine.Random.Range(-boardSize.y / 2 - 1, boardSize.y / 2 - 1)
+                    UnityEngine.Random.Range(-boardSize.y / 2 - objectsInitializationOffset, boardSize.y / 2 - objectsInitializationOffset)
                 );
                 attempts++;
-            } while (usedPositions.Exists(p => Vector3.Distance(p, position) < 2f) && attempts < maxAttempts);
+            } while (usedPositions.Exists(p => Vector3.Distance(p, position) < objectsInitializationOffset) && attempts < maxAttempts);
 
             if (attempts >= maxAttempts) {
                 Debug.LogWarning("Nie uda³o siê znaleŸæ wystarczaj¹cej liczby miejsc na portale.");
@@ -257,7 +271,6 @@ public class Main : MonoBehaviour {
 
                 portalsList[i].GetComponent<Portal>().SetExitPortal(portalsList[i + 1].GetComponent<Portal>());
             }
-
             portalsList[portalsList.Count - 1].GetComponent<Portal>().SetExitPortal(portalsList[0].GetComponent<Portal>());
         }
     }
@@ -267,6 +280,7 @@ public class Main : MonoBehaviour {
         previousMousePosition = GetMousePosition();
     }
 
+    #region Update methods
     void Update() {
         if (!isGameOn) return;
         CheckInput();
@@ -287,9 +301,7 @@ public class Main : MonoBehaviour {
             if (cannotBeMoved) return;
             if (Input.anyKey) {
                 player.Move(Config.MOVEMENT * playerSpeedParameter);
-
             }
-               
 
             var mousePosition = GetMousePosition();
             var mouseDelta = mousePosition - previousMousePosition;
@@ -326,23 +338,59 @@ public class Main : MonoBehaviour {
                 UsePortal(portal);
                 player.enteredTrigger = null;
                 return;
-            } 
-            else if (trigger.GetComponent<Reflection>()) {
-                uiManager.OpenWinPanel();
-                isGameOn = false;
-                cannotBeMoved = true;
+            } else if (trigger.GetComponent<Reflection>()) {
+                SetPlayerWin();
             }
         }
         void UsePortal(Portal portal) {
             Portal exitPortal = portal.GetExitPortal();
 
             player.transform.position = exitPortal.GetExitPortalPosition().position;
-            player.transform.rotation = Quaternion.LookRotation(exitPortal.transform.right, Vector3.up);
+         //  player.transform.rotation = Quaternion.LookRotation(exitPortal.transform.right, Vector3.up);
+
+            player.transform.rotation = exitPortal.GetExitPortalPosition().transform.rotation;
+
         }
     }
 
+    #endregion
+
+    private void SetPlayerWin() {
+        uiManager.OpenWinPanel();
+        isGameOn = false;
+        cannotBeMoved = true;
+    }
+
+    public void RestartGame() {
+        DestroyObjectsOnStart();
+        StartSoloGame();
+    }
+
+    private void DestroyObjectsOnStart() {
+        Destroy(player.gameObject);
+        Destroy(reflection.gameObject);
+    }
     #region UI methods
 
+    public void OpenSettingsFromGame() {
+        uiManager.ToggleSettingsPanelFromGame(true);
+        cannotBeMoved = true;
+        isGameOn = false;
+    }
+    public void CloseSettingsFromGame() {
+        uiManager.ToggleSettingsPanelFromGame(false);
+        cannotBeMoved = false;
+        isGameOn = true;
+    }
+
+
+    public void CloseSettingsPanel() {
+        if (player)
+            CloseSettingsFromGame();
+        else {
+            uiManager.ToggleSettingsPanelFromGame(false);
+        }
+    }
 
     public void SetPlayerSpeed(float value) {
         playerSpeedParameter = value;
@@ -362,10 +410,10 @@ public class Main : MonoBehaviour {
     }
     public void SetMouseSensitivity(float sensitivity) {
         mouseSensitivity = Mathf.Clamp(sensitivity, 0.1f, 10f); // Ograniczenie zakresu czu³oœci
-        // Zak³adaj¹c, ¿e u¿ywasz systemu obracania kamery, np. w FPS:
-        // np. `CameraController` to Twój skrypt obs³uguj¹cy kamerê
-   //  Input.get = mouseSensitivity;
-       
+                                                                // Zak³adaj¹c, ¿e u¿ywasz systemu obracania kamery, np. w FPS:
+                                                                // np. `CameraController` to Twój skrypt obs³uguj¹cy kamerê
+                                                                //  Input.get = mouseSensitivity;
+
     }
 
     float GetMousePosition()
