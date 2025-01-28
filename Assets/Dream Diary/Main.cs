@@ -5,14 +5,13 @@ using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Multiplayer;
+using Unity.Plastic.Newtonsoft.Json.Linq;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class Main : MonoBehaviour {
-    [SerializeField] Player playerPrefab;
-    [SerializeField] Reflection reflectionPrefab;
-
 
     Player player;
     Reflection reflection;
@@ -42,6 +41,16 @@ public class Main : MonoBehaviour {
     [SerializeField]
     private bool isGameOn = false;
 
+    [Header("Prefabs referenes")]
+    [SerializeField] 
+    private Player playerPrefab;
+    [SerializeField] 
+    private Reflection reflectionPrefab;
+    [SerializeField]
+    private GameObject portalPrefab;
+    [SerializeField]
+    private List<GameObject> possibleObstacles;
+
     [Space]
     [Header("Board Parameteres")]
 
@@ -51,9 +60,6 @@ public class Main : MonoBehaviour {
 
     [SerializeField]
     private List<GameObject> portalsList;
-
-    [SerializeField]
-    private List<GameObject> possibleObstacles;
 
     [SerializeField]
     private Vector2 numberOfObstaclesRange = new Vector2(5, 10);
@@ -69,9 +75,8 @@ public class Main : MonoBehaviour {
 
     [SerializeField]
     private Vector2 portalCountRange = new Vector2(2, 10);
-
     [SerializeField]
-    private GameObject portalPrefab;
+    private List<GameObject> spawnedObjects = new List<GameObject>();
 
     [Space]
     [SerializeField]
@@ -83,6 +88,7 @@ public class Main : MonoBehaviour {
     private bool wasAdShown = false;
 
     [Header("Settings references")]
+    [SerializeField]
     private float mouseSensitivity = 1f;
     private float masterVolume = 1f;
 
@@ -98,9 +104,9 @@ public class Main : MonoBehaviour {
 
     void Awake() {
         isGameOn = false;
+        SetVolume(PlayerPrefs.GetFloat("Volume", .5f));
+        SetMouseSensitivity(PlayerPrefs.GetFloat("Sensitivity", 50.0f));   
         uiManager.InitUI();
-        SetVolume(.5f);
-        SetMouseSensitivity(5f);
     }
 
 
@@ -111,9 +117,11 @@ public class Main : MonoBehaviour {
         reflection = InstantiateReflection();
     
         uiManager.CloseMainMenu();
-        InitBoardAndObjects();
+        spawnedObjects.Clear();
+        spawnedObjects.TrimExcess();
         InitPortals();
-
+        InitBoardAndObjects();
+      
         isGameOn = true;
         cannotBeMoved = false;
 
@@ -200,14 +208,14 @@ public class Main : MonoBehaviour {
             do {
                 positionValid = true;
                 position = new Vector3(
-                    UnityEngine.Random.Range(-boardSize.x / 2 - objectsInitializationOffset, boardSize.x / 2 - objectsInitializationOffset),
+                    UnityEngine.Random.Range(-Mathf.Abs(boardSize.y / 2 - objectsInitializationOffset), Mathf.Abs(boardSize.y / 2 - objectsInitializationOffset)),
                     0f,
-                    UnityEngine.Random.Range(-boardSize.y / 2 - objectsInitializationOffset, boardSize.y / 2 - objectsInitializationOffset)
+                    UnityEngine.Random.Range(-Mathf.Abs(boardSize.y / 2 - objectsInitializationOffset), Mathf.Abs(boardSize.y / 2 - objectsInitializationOffset))
                 );
 
                 // Sprawdzenie kolizji z istniej¹cymi przeszkodami
-                foreach (var existingObstacle in currentObstaclesList) {
-                    if (Vector3.Distance(position, existingObstacle.transform.position) < objectsInitializationOffset) {
+                foreach (var existingObstacle in spawnedObjects) {
+                    if (Vector3.Distance(position, existingObstacle.transform.position) < objectsInitializationOffset * 2f) {
                         positionValid = false;
                         break;
                     }
@@ -220,6 +228,7 @@ public class Main : MonoBehaviour {
                 Quaternion rotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
                 GameObject newObstacle = Instantiate(obstaclePrefab, position, rotation, currentObstaclesParent);
                 currentObstaclesList.Add(newObstacle);
+                spawnedObjects.Add(newObstacle);
             } else {
                 Debug.LogWarning($"Nie uda³o siê wygenerowaæ pozycji dla przeszkody po {maxAttempts} próbach.");
             }
@@ -244,9 +253,9 @@ public class Main : MonoBehaviour {
 
             do {
                 position = new Vector3(
-                    UnityEngine.Random.Range(-boardSize.x / 2 - objectsInitializationOffset, boardSize.x / 2 - objectsInitializationOffset),
+                    UnityEngine.Random.Range(-Mathf.Abs(boardSize.y / 2 - objectsInitializationOffset), Mathf.Abs(boardSize.y / 2 - objectsInitializationOffset)),
                     0f,
-                    UnityEngine.Random.Range(-boardSize.y / 2 - objectsInitializationOffset, boardSize.y / 2 - objectsInitializationOffset)
+                    UnityEngine.Random.Range(-Mathf.Abs(boardSize.y / 2 - objectsInitializationOffset), Mathf.Abs(boardSize.y / 2 - objectsInitializationOffset))
                 );
                 attempts++;
             } while (usedPositions.Exists(p => Vector3.Distance(p, position) < objectsInitializationOffset) && attempts < maxAttempts);
@@ -260,6 +269,7 @@ public class Main : MonoBehaviour {
             var portalObject = Instantiate(portalPrefab, position, rotation, currenPortalsParent);
             portalsList.Add(portalObject);
             usedPositions.Add(position);
+            spawnedObjects.Add(portalObject);
 
         }
 
@@ -274,7 +284,6 @@ public class Main : MonoBehaviour {
             portalsList[portalsList.Count - 1].GetComponent<Portal>().SetExitPortal(portalsList[0].GetComponent<Portal>());
         }
     }
-
 
     void Start() {
         previousMousePosition = GetMousePosition();
@@ -304,7 +313,9 @@ public class Main : MonoBehaviour {
             }
 
             var mousePosition = GetMousePosition();
-            var mouseDelta = mousePosition - previousMousePosition;
+          //  var mouseDelta = mousePosition - previousMousePosition;
+            var mouseDelta = (mousePosition - previousMousePosition) * mouseSensitivity * Time.deltaTime;
+            previousMousePosition = mousePosition;
             previousMousePosition = mousePosition;
 
             if (!Mathf.Approximately(mouseDelta, 0f))
@@ -405,15 +416,13 @@ public class Main : MonoBehaviour {
 
     #endregion
     public void SetVolume(float volume) {
-        masterVolume = Mathf.Clamp01(volume); // Ograniczenie zakresu od 0 do 1
-        AudioListener.volume = masterVolume; // Ustawienie globalnej g³oœnoœci
+        PlayerPrefs.SetFloat("Volume", volume);
+        masterVolume = Mathf.Clamp01(volume); 
+        AudioListener.volume = masterVolume; 
     }
     public void SetMouseSensitivity(float sensitivity) {
-        mouseSensitivity = Mathf.Clamp(sensitivity, 0.1f, 10f); // Ograniczenie zakresu czu³oœci
-                                                                // Zak³adaj¹c, ¿e u¿ywasz systemu obracania kamery, np. w FPS:
-                                                                // np. `CameraController` to Twój skrypt obs³uguj¹cy kamerê
-                                                                //  Input.get = mouseSensitivity;
-
+        PlayerPrefs.SetFloat("Sensitivity", sensitivity);
+        mouseSensitivity = Mathf.Clamp(sensitivity,0,100f);
     }
 
     float GetMousePosition()

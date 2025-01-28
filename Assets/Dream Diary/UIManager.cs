@@ -2,9 +2,10 @@ using UnityEngine;
 using DG.Tweening;
 using static UnityEngine.GraphicsBuffer;
 using System.Security.Cryptography;
+using UnityEngine.UI;
+//using Unity.UI
 
 public class UIManager : MonoBehaviour {
-    // Public method to trigger the animation
 
     [SerializeField]
     private GameObject adGameObject;
@@ -26,6 +27,11 @@ public class UIManager : MonoBehaviour {
 
     [SerializeField]
     private CanvasGroup settingsPanel;
+
+    [SerializeField]
+    private Slider volumeSlider;
+    [SerializeField]
+    private Slider sensitivitySlider;
 
     [ContextMenu("Add Sequence")]
     public void PlayAdSequence() {
@@ -53,6 +59,9 @@ public class UIManager : MonoBehaviour {
         HidePanelInstant(hostPanel);
         HidePanelInstant(clientPanel);
         HidePanelInstant(settingsPanel);
+
+        volumeSlider.value = PlayerPrefs.GetFloat("Volume");
+        sensitivitySlider.value = PlayerPrefs.GetFloat("Sensitivity");
     }
 
     public void CloseMainMenu() {
