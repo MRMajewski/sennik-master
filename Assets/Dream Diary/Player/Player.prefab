@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 8348006062850446363}
   - component: {fileID: 6606839649417705500}
   - component: {fileID: 8222183242502842109}
+  - component: {fileID: 5194433424276693788}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -144,6 +145,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enteredTrigger: {fileID: 0}
   characterController: {fileID: 6356108227128464746}
+  animator: {fileID: 5194433424276693788}
 --- !u!143 &6356108227128464746
 CharacterController:
   m_ObjectHideFlags: 0
@@ -301,6 +303,27 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8567395905099937362}
   m_Enabled: 1
+--- !u!95 &5194433424276693788
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8567395905099937362}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: b1a734621144ea5149e4ad27a5f0ada5, type: 3}
+  m_Controller: {fileID: 9100000, guid: 477e5aff3570d3549b843319162bb28a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &521710293920356065
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -353,7 +376,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2443072656736820241, guid: 4a6dc08c73a129fe78ab384a4b84e551, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

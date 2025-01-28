@@ -12,6 +12,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class Main : MonoBehaviour {
+   
+    [SerializeField]
+    private UIManager uiManager;
 
     Player player;
     Reflection reflection;
@@ -23,22 +26,11 @@ public class Main : MonoBehaviour {
 
     float previousMousePosition;
 
-
     [Header("Player movement references")]
     [SerializeField]
     private float playerSpeedParameter = 1f;
 
-    [SerializeField]
-    private float offsetDistance = .75f;
-
-    //[SerializeField]
-    //private GameObject winPanel;
-
-    [SerializeField]
     private bool cannotBeMoved = false;
-
-
-    [SerializeField]
     private bool isGameOn = false;
 
     [Header("Prefabs referenes")]
@@ -78,9 +70,7 @@ public class Main : MonoBehaviour {
     [SerializeField]
     private List<GameObject> spawnedObjects = new List<GameObject>();
 
-    [Space]
-    [SerializeField]
-    private UIManager uiManager;
+
 
     [Header("Ad method references")]
     private Vector3 previousPlayerPosition;
@@ -101,15 +91,12 @@ public class Main : MonoBehaviour {
             portalCountRange.x = portalCountRange.y;
         }
     }
-
     void Awake() {
         isGameOn = false;
         SetVolume(PlayerPrefs.GetFloat("Volume", .5f));
         SetMouseSensitivity(PlayerPrefs.GetFloat("Sensitivity", 50.0f));   
         uiManager.InitUI();
     }
-
-
     public void StartSoloGame() {
 
         player = InstantiatePlayer();
@@ -141,10 +128,7 @@ public class Main : MonoBehaviour {
         float GetRandomOffset()
             => UnityEngine.Random.value - 0.5f;
 
-
     }
-
-
     public void StartMultiplayer() {
 
         SetupMultiplayer();
@@ -311,9 +295,12 @@ public class Main : MonoBehaviour {
             if (Input.anyKey) {
                 player.Move(Config.MOVEMENT * playerSpeedParameter);
             }
+            else {
+                player.Stop();
+            }
+
 
             var mousePosition = GetMousePosition();
-          //  var mouseDelta = mousePosition - previousMousePosition;
             var mouseDelta = (mousePosition - previousMousePosition) * mouseSensitivity * Time.deltaTime;
             previousMousePosition = mousePosition;
             previousMousePosition = mousePosition;
@@ -350,6 +337,7 @@ public class Main : MonoBehaviour {
                 player.enteredTrigger = null;
                 return;
             } else if (trigger.GetComponent<Reflection>()) {
+             
                 SetPlayerWin();
             }
         }
@@ -357,9 +345,7 @@ public class Main : MonoBehaviour {
             Portal exitPortal = portal.GetExitPortal();
 
             player.transform.position = exitPortal.GetExitPortalPosition().position;
-         //  player.transform.rotation = Quaternion.LookRotation(exitPortal.transform.right, Vector3.up);
-
-            player.transform.rotation = exitPortal.GetExitPortalPosition().transform.rotation;
+            player.transform.rotation = Quaternion.LookRotation(exitPortal.transform.right, exitPortal.transform.up);
 
         }
     }
@@ -367,6 +353,7 @@ public class Main : MonoBehaviour {
     #endregion
 
     private void SetPlayerWin() {
+        player.Stop();
         uiManager.OpenWinPanel();
         isGameOn = false;
         cannotBeMoved = true;
