@@ -46,31 +46,24 @@ public class Main : MonoBehaviour {
     [Space]
     [Header("Board Parameteres")]
 
-    [SerializeField] Vector2 boardSize;
+    [SerializeField] 
+    private Vector2 boardSize;
 
-    [SerializeField] float objectsInitializationOffset = 2f;
-
-    [SerializeField]
-    private List<GameObject> portalsList;
-
+    [SerializeField] 
+    private float objectsInitializationOffset = 2f;
     [SerializeField]
     private Vector2 numberOfObstaclesRange = new Vector2(5, 10);
 
-    [SerializeField]
-    private List<GameObject> currentObstaclesList;
-
-    [SerializeField]
-    private Transform currentObstaclesParent;
-
-    [SerializeField]
-    private Transform currenPortalsParent;
+    private List<GameObject> portalsList = new List<GameObject>();
+    private List<GameObject> currentObstaclesList = new List<GameObject>();
+    private List<GameObject> spawnedObjects = new List<GameObject>();
 
     [SerializeField]
     private Vector2 portalCountRange = new Vector2(2, 10);
     [SerializeField]
-    private List<GameObject> spawnedObjects = new List<GameObject>();
-
-
+    private Transform currentObstaclesParent;
+    [SerializeField]
+    private Transform currenPortalsParent;
 
     [Header("Ad method references")]
     private Vector3 previousPlayerPosition;
@@ -127,7 +120,6 @@ public class Main : MonoBehaviour {
         }
         float GetRandomOffset()
             => UnityEngine.Random.value - 0.5f;
-
     }
     public void StartMultiplayer() {
 
@@ -170,7 +162,6 @@ public class Main : MonoBehaviour {
 
     }
 
-
     public void InitBoardAndObjects() {
 
         foreach (var obstacle in currentObstaclesList) {
@@ -183,11 +174,10 @@ public class Main : MonoBehaviour {
         for (int i = 0; i < obstacleCount; i++) {
             GameObject obstaclePrefab = possibleObstacles[UnityEngine.Random.Range(0, possibleObstacles.Count)];
 
-
             Vector3 position;
             bool positionValid;
             int attempts = 0;
-            const int maxAttempts = 100; // Limit prób, by unikn¹æ nieskoñczonej pêtli
+            const int maxAttempts = 100; 
 
             do {
                 positionValid = true;
@@ -197,7 +187,6 @@ public class Main : MonoBehaviour {
                     UnityEngine.Random.Range(-Mathf.Abs(boardSize.y / 2 - objectsInitializationOffset), Mathf.Abs(boardSize.y / 2 - objectsInitializationOffset))
                 );
 
-                // Sprawdzenie kolizji z istniej¹cymi przeszkodami
                 foreach (var existingObstacle in spawnedObjects) {
                     if (Vector3.Distance(position, existingObstacle.transform.position) < objectsInitializationOffset * 2f) {
                         positionValid = false;
@@ -254,7 +243,6 @@ public class Main : MonoBehaviour {
             portalsList.Add(portalObject);
             usedPositions.Add(position);
             spawnedObjects.Add(portalObject);
-
         }
 
         PreparePortals();
@@ -280,7 +268,6 @@ public class Main : MonoBehaviour {
         if (!wasAdShown) {
             TrackDistance();
         }
-
         return;
 
         void CheckInput() {
@@ -298,7 +285,6 @@ public class Main : MonoBehaviour {
             else {
                 player.Stop();
             }
-
 
             var mousePosition = GetMousePosition();
             var mouseDelta = (mousePosition - previousMousePosition) * mouseSensitivity * Time.deltaTime;
@@ -346,7 +332,6 @@ public class Main : MonoBehaviour {
 
             player.transform.position = exitPortal.GetExitPortalPosition().position;
             player.transform.rotation = Quaternion.LookRotation(exitPortal.transform.right, exitPortal.transform.up);
-
         }
     }
 
@@ -380,7 +365,6 @@ public class Main : MonoBehaviour {
         cannotBeMoved = false;
         isGameOn = true;
     }
-
 
     public void CloseSettingsPanel() {
         if (player)

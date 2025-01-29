@@ -3,7 +3,6 @@ using DG.Tweening;
 using static UnityEngine.GraphicsBuffer;
 using System.Security.Cryptography;
 using UnityEngine.UI;
-//using Unity.UI
 
 public class UIManager : MonoBehaviour {
 
@@ -33,7 +32,6 @@ public class UIManager : MonoBehaviour {
     [SerializeField]
     private Slider sensitivitySlider;
 
-    [ContextMenu("Add Sequence")]
     public void PlayAdSequence() {
         PlayScaleAnimation(adGameObject);
     }
@@ -47,10 +45,7 @@ public class UIManager : MonoBehaviour {
         sequence.Append(target.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack));
         sequence.Append(target.transform.DOScale(1.15f, 1f).SetEase(Ease.InOutCirc).SetLoops(4, LoopType.Yoyo));
         sequence.Append(target.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack));
-
     }
-
-
     public void InitUI() {
         OpenPanelInstant(mainMenuPanel);
 
@@ -63,7 +58,6 @@ public class UIManager : MonoBehaviour {
         volumeSlider.value = PlayerPrefs.GetFloat("Volume");
         sensitivitySlider.value = PlayerPrefs.GetFloat("Sensitivity");
     }
-
     public void CloseMainMenu() {
         HidePanel(mainMenuPanel);
         OpenPanel(headerPanel);
@@ -74,7 +68,6 @@ public class UIManager : MonoBehaviour {
         HidePanelInstant(clientPanel);
         HidePanelInstant(settingsPanel);
     }
-
 
     public void ReinitUI() {
         OpenPanel(headerPanel);
@@ -90,8 +83,6 @@ public class UIManager : MonoBehaviour {
         }
     }
 
-
-    [ContextMenu("Open Win Panel")]
     public void OpenWinPanel() {
         OpenPanel(winPanel);
     }
@@ -116,7 +107,6 @@ public class UIManager : MonoBehaviour {
         panel.alpha = 1f;
         panel.interactable = true;
         panel.blocksRaycasts = true;
-
     }
 
     public void HidePanel(CanvasGroup panel) {
@@ -127,17 +117,12 @@ public class UIManager : MonoBehaviour {
         DOTween.To(() => currentAlpha, x => {
             currentAlpha = x;
             panel.alpha = currentAlpha;
-        }, 0f, 0.5f).OnComplete(() => {
-
-          //  panel.gameObject.SetActive(false);
-        });
+        }, 0f, 0.5f);
     }
-
 
     public void HidePanelInstant(CanvasGroup panel) {
         panel.alpha = 0f;
         panel.interactable = false;
         panel.blocksRaycasts = false;
-
     }
 }
